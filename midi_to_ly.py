@@ -9,11 +9,12 @@ import os
 import subprocess
 
 
-QUARTER = 4
-EIGHTH = 8
-SIXTEENTH = 16
+QUARTER = 1
+EIGHTH = 2
+SIXTEENTH = 4
 
 NOTE_TYPES = [QUARTER, EIGHTH, SIXTEENTH]
+TYPE_TO_LY = {QUARTER: 4, EIGHTH: 8, SIXTEENTH: 16}
 # Mapping of MIDI pitch to LilyPond string, based on General Midi Percussion Standard
 NOTE_PITCHES = {36: 'bd', 38: 'sn', 42: 'hh'}
 
@@ -105,7 +106,7 @@ def note_groups_to_ly(groups):
         ly_note = ly_note[1:]   # Remove first space
         if len(g.notes) > 1:
             ly_note = '<{0}>'.format(ly_note)
-        ly_note += str(g.note_type)
+        ly_note += str(TYPE_TO_LY[g.note_type])
         ly_note += ' '                              # TODO: Add newline if end of measure
         ly_string += ly_note
     return ly_string
@@ -141,14 +142,14 @@ def to_pdf(title, ly_string):
     c = 'lilypond -fpdf -o "{0}" "{1}.ly"'.format(title, title)
     print 'Executing: ' + c
     p = subprocess.Popen(c, shell=True).wait()
-    os.remove(title + '.ly')
+    # os.remove(title + '.ly')
     return True
 
 
 def main():
     # Read MIDI file and save note data
-    pattern = midi.read_midifile('midi-files/onebeat.mid')  # TODO: Parse command line arguments
-    resolution = pattern.resolution  # Ticks per measure
+    pattern = midi.read_midifile('midi-files/onebar.mid')  # TODO: Parse command line arguments
+    resolution = pattern.resolution  # Ticks per quarter note
     notes = midi_to_notes(pattern)
 
     # Sort notes into groups
@@ -163,7 +164,7 @@ def main():
     ly_string = construct_ly_string(ly_notes)
 
     # Output to pdf
-    to_pdf('simple', ly_string)
+    to_pdf('onebar', ly_string)
 
 if __name__ == '__main__':
     try:
